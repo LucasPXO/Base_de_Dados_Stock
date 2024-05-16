@@ -24,11 +24,6 @@ adminLogin();
 
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body">
-                        <form class="col-md-6 position-absolute top-10 start-20" id="search">
-                            <input type="text" name="searchbox"  placeholder="Procurar produto..." />
-                            <button type="button"><i class="bi bi-search"></i></button>
-
-                        </form>
 
                         <div class="text-end mb-3">
                             <button type="button" class="btn btn-dark shadow-none btn-sm" data-bs-toggle="modal" data-bs-target="#add-stock">
