@@ -120,4 +120,71 @@
         }
     }
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_item'])) {
+
+    $searchTerm = "%" . $_POST['search_item'] . "%";
+
+    $query = "
+        SELECT 
+            i.id, 
+            i.CodInt, 
+            i.Nome, 
+            i.TipoUN,
+            COALESCE(SUM(e.Qnt_Ent), 0) AS TotalEntradas,
+            COALESCE(SUM(s.Qnt_Sai), 0) AS TotalSaidas
+        FROM 
+            `itens` i
+        LEFT JOIN 
+            `entradas` e ON i.CodInt = e.CodInt
+        LEFT JOIN 
+            `saidas` s ON i.CodInt = s.CodInt
+        WHERE 
+            i.Nome LIKE ?
+        GROUP BY 
+            i.id, i.CodInt, i.Nome, i.TipoUN
+        ORDER BY
+            i.Nome ASC
+    ";
+    
+    $res = select($query, [$searchTerm], 's');
+    
+    $i = 1;
+    $data = ""; 
+
+    if ($res && mysqli_num_rows($res) > 0) {
+        while ($row = mysqli_fetch_assoc($res)) {
+            
+            $stock = $row['TotalEntradas'] - $row['TotalSaidas'];
+
+
+            $data .= "
+                <tr class='align-middle'>
+                    <td>{$i}</td>
+                    <td>" . htmlspecialchars($row['CodInt']) . "</td>
+                    <td>" . htmlspecialchars($row['Nome']) . "</td>
+                    <td>" . htmlspecialchars($row['TotalEntradas']) . "</td>
+                    <td>" . htmlspecialchars($row['TotalSaidas']) . "</td>
+                    <td>" . htmlspecialchars($stock) . "</td>
+                    <td>" . htmlspecialchars($row['TipoUN']) . "</td>
+                    <td>
+                        <button type='button' onclick='edit_item(" . intval($row['id']) . ")' class='btn btn-primary shadow-none btn-sm' data-bs-toggle='modal' data-bs-target='#edit-item'>
+                            <i class='bi bi-pencil-square'></i> 
+                        </button>
+                        <button type='button' onclick='rem_item(" . intval($row['id']) . ")' class='btn btn-danger btn-sm shadow-none'>
+                            <i class='bi bi-trash'></i>
+                        </button>
+                    </td>
+                </tr>
+            ";
+            $i++;
+        }
+    } else {
+        $data = "<tr><td colspan='8' class='text-center'>Nenhum item encontrado para a sua pesquisa.</td></tr>";
+    }
+
+    echo $data;
+} else {
+    // Resposta caso o ficheiro seja acedido de forma indevida
+}
+
 ?>

@@ -2,8 +2,8 @@
 
 $hname = 'localhost';
 $uname = 'root';
-$pass = '';
-$db = 'bdsite';
+$pass = 'root';
+$db = 'bdfinal';
 
 $con = mysqli_connect($hname, $uname, $pass, $db);
 

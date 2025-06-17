@@ -23,35 +23,41 @@ adminLogin();
                 <h3 class="mb-4">STOCK</h3>
 
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body">
+    <div class="card-body">
+        
+        <div class="d-flex justify-content-between mb-3">
+            <form id="search_stock_form">
+                <input type="text" id="sb_stock" name="sb_stock">
+                <button type="submit" class="btn btn-dark shadow-none btn-sm">
+                    <i class="bi bi-search"></i> 
+                </button>
+            </form>
+            <button type="button" class="btn btn-dark shadow-none btn-sm" data-bs-toggle="modal" data-bs-target="#add-stock">
+                <i class="bi bi-plus-square"></i>
+            </button>
+        </div>
 
-                        <div class="text-end mb-3">
-                            <button type="button" class="btn btn-dark shadow-none btn-sm" data-bs-toggle="modal" data-bs-target="#add-stock">
-                                <i class="bi bi-plus-square"></i>
-                            </button>
-                        </div>
+        <div class="table-responsive-lg mt-3" style="height: 450px; overflow-y: scroll;">
+            <table class="table table-hover border text-center">
+                <thead class="sticky-top">
+                    <tr class="bg-dark text-light">
+                        <th scope="col">#</th>
+                        <th scope="col">Cod Interno</th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Entradas</th>
+                        <th scope="col">Saidas</th>
+                        <th scope="col">Stock</th>
+                        <th scope="col">Tipo UN</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-data">
 
-                        <div class="table-responsive-lg mt-3" style="height: 450px; overflow-y: scroll;">
-                            <table class="table table-hover border text-center">
-                                <thead class="sticky-top">
-                                    <tr class="bg-dark text-light">
-                                        <th scope="col">#</th>
-                                        <th scope="col">Cod Interno</th>
-                                        <th scope="col">Nome</th>
-                                        <th scope="col">Entradas</th>
-                                        <th scope="col">Saidas</th>
-                                        <th scope="col">Stock</th>
-                                        <th scope="col">Tipo UN</th>
-                                        <th scope="col">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="stock-data">
-
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -142,6 +148,63 @@ adminLogin();
     <?php require('inc/scripts.php'); ?>
 
     <script>
+
+        let search_stock_form = document.getElementById('search_stock_form')
+
+        search_stock_form.addEventListener('submit', function(e){
+            e.preventDefault();
+            search_item_with_fetch();
+        })
+
+        function search_item() {
+            // FormData é a maneira correta de fazer isto.
+            let data = new FormData();
+            data.append('search_item', search_stock_form.elements['sb_stock'].value);
+            data.append('search_item', true); // Adicionando a flag que o seu PHP espera
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "ajax/stock.php", true);
+
+            // REMOVA ESTA LINHA! O navegador vai definir o Content-Type correto para FormData.
+            // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); 
+
+            xhr.onload = function() {
+                if (this.status == 200) { // É uma boa prática verificar se o pedido foi bem-sucedido
+                    document.getElementById('stock-data').innerHTML = this.responseText;
+                } else {
+                    console.error("Erro no pedido AJAX: " + this.status);
+                }
+            }
+
+            // CORRIJA ESTA LINHA! Envie apenas o objeto FormData.
+            xhr.send(data);
+        }
+
+        function search_item_with_fetch() {
+            let data = new FormData();
+            data.append('search_item', search_stock_form.elements['sb_stock'].value);
+            
+            fetch('ajax/stock.php', {
+                method: 'POST',
+                body: data // Enviar o FormData diretamente no corpo
+            })
+            .then(response => {
+                // Verifica se a resposta da rede foi bem-sucedida
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.text(); // Converte a resposta para texto
+            })
+            .then(html => {
+                // Atualiza o HTML da página
+                document.getElementById('stock-data').innerHTML = html;
+            })
+            .catch(error => {
+                // Captura e exibe quaisquer erros que ocorram
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+        }
+
         let add_stock_form = document.getElementById('add_stock_form');
 
         add_stock_form.addEventListener('submit', function(e) {
